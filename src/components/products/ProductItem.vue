@@ -1,38 +1,39 @@
-<template>
-  <article class="flex flex-col">
-    <img :src="product.img" class="max-h-[200px] w-auto mx-auto" alt="" />
-    <h3 class="font-bold mt-auto">{{ product.name }}</h3>
-    <div class="flex flex-row justify-between pb-2">
-      <p>{{ formatPrice(product.price) }}</p>
-      <p>{{ product.availableAmount }} {{ amount }} in stock</p>
-    </div>
-    <div class="flex flex-row justify-between">
-      <VTouchspin v-model="orderAmount" />
-      <VButton @click="addItemToCart(product)">Add to cart</VButton>
-    </div>
-  </article>
-</template>
 <script setup lang="ts">
-import { ref, type PropType } from 'vue'
+import type { PropType } from 'vue'
+import ProductAddToCart from './ProductAddToCart.vue'
 import type { Product } from '@/types'
-import useCart from '@/composables/useCart'
-import VTouchspin from '@/components/common/VTouchspin.vue'
-import VButton from '@/components/common/VButton.vue'
 import useUnits from '@/composables/useUnits'
 
-const { amount, formatPrice } = useUnits()
-const { addToCart } = useCart()
-
-const props = defineProps({
+defineProps({
   product: {
     type: Object as PropType<Product>,
-    required: true
-  }
+    required: true,
+  },
 })
 
-const orderAmount = ref(props.product.minOrderAmount)
-
-const addItemToCart = (product: Product) => {
-  addToCart(product, orderAmount.value)
-}
+const { formatPrice } = useUnits()
 </script>
+<template>
+  <article
+    class="product-item flex flex-col"
+    :data-product-id="product.id"
+    :data-product-price="product.price"
+    :data-product-available="product.availableAmount"
+    :data-product-minimum="product.minOrderAmount"
+  >
+    <img
+      :src="product.img"
+      class="max-h-[200px] w-auto mx-auto mb-auto"
+      alt=""
+    >
+    <div class="flex flex-row justify-between pb-2">
+      <h3 class="font-bold mt-auto">
+        {{ product.name }}
+      </h3>
+      <p class="product-price">
+        {{ formatPrice(product.price) }}
+      </p>
+    </div>
+    <ProductAddToCart :product="product" />
+  </article>
+</template>

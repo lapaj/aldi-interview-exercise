@@ -1,90 +1,93 @@
+import { computed, reactive, watch } from 'vue'
 import type { CartItem, Product } from '@/types'
-import { reactive, watch } from 'vue'
 
-const cart = reactive({ total: 0, productItems: new Map<string, CartItem>() })
+const cart = reactive({ productItems: new Map<string, CartItem>() })
 
 export default function useCart() {
   const LOCAL_STORAGE_KEY = 'webshop_cart'
 
   const loadCart = () => {
-    const cartInStorage: string | null = window.localStorage.getItem(LOCAL_STORAGE_KEY)
-    if (!cartInStorage) return
+    const cartInStorage: string | null
+      = window.localStorage.getItem(LOCAL_STORAGE_KEY)
+
+    if (!cartInStorage)
+      return
+
     try {
       const parsedCart = JSON.parse(cartInStorage)
-      if (parsedCart?.length) {
-        cart.productItems = parsedCart
-      }
-    } catch (err) {
+      if (parsedCart?.length)
+        cart.productItems = new Map(parsedCart)
+    }
+    catch (err) {
       console.error(err)
     }
   }
 
-  const updateTotal = () => {
-    cart.total = 0
+  const cartTotal = computed(() => {
+    let total = 0
     cart.productItems.forEach((item) => {
       item.totalPrice = item.product.price * item.amount
-      cart.total += item.totalPrice
+      total += item.totalPrice
     })
-  }
+    return total
+  })
 
-  if (cart.productItems.length === 0) {
+  const cartItemCount = computed(() => {
+    return cart.productItems?.size ?? 0
+  })
+
+  if (cart.productItems.size === 0)
     loadCart()
-    updateTotal()
-  }
 
-  const getItemById = (productId: string) => {
-    return cart.productItems.find((item) => productId == item.product.id)
-  }
-
-  const getItemIndexById = (productId: string) => {
-    return cart.productItems.findIndex((item) => productId == item.product.id)
+  const getCartItem = (product: Product) => {
+    return cart.productItems.get(product.id)
   }
 
   const addToCart = (product: Product, amount: number) => {
-    const existingItem = getItemById(product.id)
-    if (existingItem) {
+    if (cart.productItems.has(product.id)) {
+      const existingItem = cart.productItems.get(product.id)!
       existingItem.amount += amount
       existingItem.totalPrice += amount * product.price
-    } else {
-      cart.productItems.push({ product, totalPrice: product.price * amount, amount })
     }
+    else
+      cart.productItems.set(product.id, {
+        product,
+        totalPrice: product.price * amount,
+        amount,
+      })
   }
 
-  const removeFromCart = (cartItem: CartItem) => {
-    const removeIndex = getItemIndexById(cartItem.product.id)
-    if (removeIndex > -1) {
-      cart.productItems.splice(removeIndex, 1)
-    }
+  const isProductInCart = (product: Product) => {
+    return cart.productItems.has(product.id)
+  }
+
+  const removeProductFromCart = (product: Product) => {
+    cart.productItems.delete(product.id)
   }
 
   const saveCart = () => {
-    window.localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(cart.productItems))
+    window.localStorage.setItem(
+      LOCAL_STORAGE_KEY,
+      JSON.stringify([...cart.productItems.entries()]),
+    )
   }
 
-  const validateAmount = (cartItem: CartItem) => {
-    return isAmountAvailable(cartItem) && isAmountMinimum(cartItem)
+  const clearCart = () => {
+    cart.productItems.clear()
   }
 
-  const isAmountAvailable = (cartItem: CartItem) => {
-    return cartItem.amount <= cartItem.product.availableAmount
-  }
-
-  const isAmountMinimum = (cartItem: CartItem) => {
-    return cartItem.amount >= cartItem.product.minOrderAmount
-  }
-
-  watch(cart.productItems, (oldValue, newValue) => {
-    console.log({oldValue, newValue})
+  watch(cartItemCount, () => {
     saveCart()
-    updateTotal()
   })
 
   return {
     cart,
-    getItemById,
-    getItemIndexById,
+    getCartItem,
     addToCart,
-    removeFromCart,
-    updateTotal
+    removeProductFromCart,
+    cartTotal,
+    cartItemCount,
+    isProductInCart,
+    clearCart,
   }
 }

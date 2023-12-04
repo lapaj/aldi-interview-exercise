@@ -1,10 +1,10 @@
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import CartButton from '../cart/CartButton.vue'
 
 import useUnits from '@/composables/useUnits'
 
-describe('CartButton', () => {
+describe('cartButton', () => {
   const { currency } = useUnits()
   it('renders properly', () => {
     const wrapper = mount(CartButton)

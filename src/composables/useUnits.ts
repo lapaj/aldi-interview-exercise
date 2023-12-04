@@ -9,6 +9,6 @@ export default function useUnits() {
   return {
     currency,
     amount,
-    formatPrice
+    formatPrice,
   }
 }

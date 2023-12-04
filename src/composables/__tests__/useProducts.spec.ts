@@ -1,13 +1,21 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { flushPromises } from '@vue/test-utils'
 import useProducts from '../useProducts'
 import type { Product } from '@/types'
 import { client } from '@/client/products'
 
-describe('Products composable store', () => {
+describe('products composable store', () => {
   const { products } = useProducts()
 
   const mockResponse: Product[] = [
-    { id: '1', name: 'paper', img: '/paper.jpg', availableAmount: 1, minOrderAmount: 1, price: 1.0 }
+    {
+      id: '1',
+      name: 'paper',
+      img: '/paper.jpg',
+      availableAmount: 1,
+      minOrderAmount: 1,
+      price: 1.0,
+    },
   ]
 
   beforeEach(() => {
@@ -23,10 +31,12 @@ describe('Products composable store', () => {
     const { fetchProducts } = useProducts()
 
     vi.spyOn(client, 'get').mockResolvedValue({
-      data: mockResponse
+      status: 200,
+      data: mockResponse,
     })
 
-    await fetchProducts()
+    fetchProducts()
+    await flushPromises()
 
     expect(client.get).toHaveBeenCalledWith('/')
     expect(products).toEqual(mockResponse)

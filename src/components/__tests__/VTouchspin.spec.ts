@@ -1,8 +1,8 @@
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import VTouchspin from '../common/VTouchspin.vue'
 
-describe('VTouchspin', () => {
+describe('vTouchspin', () => {
   it('renders properly', () => {
     const wrapper = mount(VTouchspin)
 
