@@ -1,4 +1,4 @@
-# aldi-interview-exercise
+# Simple webshop application
 
 Simple front-end application with products and cart pages using Vue 3, Tailwind, Vitest and Cypress. The app retrieves the products from the server and allows the user to put the products in their cart according to certain restrictions. Lacking any kind of advanced UI design, the app is minimalistic looking, but responsive.
 
